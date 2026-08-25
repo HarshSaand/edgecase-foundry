@@ -115,6 +115,8 @@ The included scenario generated 200 valid sequences from a fixed seed. The trans
 
 The complete recorded report is available in [`results/demo_report.json`](results/demo_report.json).
 
+![EdgeCase Foundry result preview showing missed and detected events around the model threshold](results/result-preview.png)
+
 ## Run the demo
 
 Requires Python 3.10+ and no external packages.
