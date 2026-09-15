@@ -1,0 +1,48 @@
+{
+  "scope": "Synthetic stress fixture, actual generator and baseline replay",
+  "seed": 17,
+  "first_sequence": [
+    {
+      "account_id": "stress-00000",
+      "minute": 3,
+      "amount": 4.82,
+      "channel": "chip",
+      "city": "Seattle",
+      "label": 0
+    },
+    {
+      "account_id": "stress-00000",
+      "minute": 6,
+      "amount": 1.29,
+      "channel": "chip",
+      "city": "Seattle",
+      "label": 0
+    },
+    {
+      "account_id": "stress-00000",
+      "minute": 11,
+      "amount": 3.48,
+      "channel": "chip",
+      "city": "Seattle",
+      "label": 0
+    },
+    {
+      "account_id": "stress-00000",
+      "minute": 12,
+      "amount": 1213.8,
+      "channel": "online",
+      "city": "New York",
+      "label": 1
+    }
+  ],
+  "first_sequence_evaluation": {
+    "positive_events": 1,
+    "detected": 1,
+    "recall": 1.0
+  },
+  "full_200_sequence_evaluation": {
+    "positive_events": 200,
+    "detected": 86,
+    "recall": 0.43
+  }
+}
