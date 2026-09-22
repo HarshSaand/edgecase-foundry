@@ -1,5 +1,7 @@
 # EdgeCase Foundry
 
+[Read the project report (PDF)](docs/PROJECT_REPORT.pdf) · [Explore the explanation and flow diagram](docs/PROJECT_REPORT.md)
+
 ## Inspect an actual output
 
 ![Inspect the transaction sequence behind the stress test](docs/output-showcase.png)
@@ -23,30 +25,16 @@ An analyst writes:
 
 > Generate accounts with three purchases below $5, followed within 20 minutes by an online transaction above $700 from a new city.
 
-The system converts this into a typed scenario, validates the constraints, generates controlled transaction sequences and compares a baseline model's performance on normal and stressed populations.
+The system converts this into a typed scenario, validates the constraints, generates controlled transaction sequences and replays a deterministic amount/channel rule on the generated positive sequences.
 
 ## System flow
 
 ```text
-risk hypothesis in plain language
-             |
-             v
-LLM compiler -> typed scenario specification
-             |
-             v
-schema and financial constraint validation
-             |
-             v
-conditional sequence generator
-             |
-             v
-plausibility and distribution checks
-             |
-             v
-model replay -> failure slices -> experiment report
+hypothesis -> regex compiler -> typed scenario -> validation
+           -> seeded sequence generator -> amount/channel rule -> report
 ```
 
-The compiler is intentionally separated from execution. An LLM may propose a scenario, but deterministic code validates every field before a test can run. This makes the experiment reproducible and prevents generated prose from silently changing model inputs.
+The current compiler uses regular expressions for one supported hypothesis family. The executor validates the extracted scenario before generating transaction rows. LLM compilation is a proposed extension.
 
 The local demo includes a deterministic compiler for one supported hypothesis family. It proves the specification, validation, generation and replay path without requiring an API key. The full experiment will compare this baseline with constrained LLM compilation.
 
@@ -55,11 +43,11 @@ The local demo includes a deterministic compiler for one supported hypothesis fa
 ```mermaid
 flowchart LR
     A[Risk hypothesis or policy text] --> B[Text pre-processing]
-    B --> C[LLM scenario compiler]
+    B --> C[Implemented regex compiler]
     C --> D[Typed scenario JSON]
     D --> E[Schema and constraint validator]
     E --> F[Conditional sequence generator]
-    F --> G[Plausibility and distribution checks]
+    F --> G[Scenario constraint checks]
     G --> H[Model replay]
     H --> I[Failure-slice analysis]
     I --> J[Stress-test report]
@@ -70,7 +58,7 @@ flowchart LR
 
 The implemented compiler lowercases the hypothesis, maps number words such as `three` to integers and uses regular expressions to extract the final amount and time window. Keyword rules identify the transaction channel and whether the final event requires a new city. Inputs without an amount or time window are rejected rather than completed with guessed values.
 
-The next compiler uses `Qwen2.5-3B-Instruct` with temperature `0`, constrained JSON decoding and the same `Scenario` schema used by the Python executor. The prompt contains the supported fields, units and operators, plus a small set of reviewed examples. The LLM translates prose into a specification; it never creates transaction rows or changes validation rules.
+A proposed, unimplemented compiler would use `Qwen2.5-3B-Instruct` with temperature `0`, constrained JSON decoding and the same `Scenario` schema used by the Python executor. The prompt contains the supported fields, units and operators, plus a small set of reviewed examples. The LLM translates prose into a specification; it never creates transaction rows or changes validation rules.
 
 ```json
 {
@@ -89,7 +77,7 @@ The scenario is stored as a frozen Python dataclass. Validation restricts `small
 
 ### Conditional generation
 
-The implemented generator uses Python's seeded `random.Random` to create reproducible sequences. Small purchases are sampled below the scenario maximum, event times remain inside the requested window and the final city is sampled from cities other than the account's home city when required. The full experiment will condition a TabFormer sequence model on the validated scenario and reject samples that fail deterministic constraints. Generated data is checked for constraint satisfaction, duplicates and distribution distance from the reference population.
+The implemented generator uses Python's seeded `random.Random` to create reproducible sequences. Small purchases are sampled below the scenario maximum, event times remain inside the requested window and the final city is sampled from cities other than the account's home city when required. The full experiment will condition a TabFormer sequence model on the validated scenario and reject samples that fail deterministic constraints. The current fixture checks scenario constraints. Duplicate and distribution-fidelity evaluation remain future work.
 
 ### Model replay and post-processing
 
